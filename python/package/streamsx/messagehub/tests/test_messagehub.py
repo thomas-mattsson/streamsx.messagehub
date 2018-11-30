@@ -12,6 +12,7 @@ import datetime
 import os
 import time
 import uuid
+import json
 
 ##
 ## Test assumptions
@@ -40,6 +41,14 @@ class TestSubscribeParams(TestCase):
         self.assertRaises(TypeError, mh.subscribe, topo, 'T1', CommonSchema.XML)
         self.assertRaises(TypeError, mh.subscribe, topo, 'T1', StreamSchema('tuple<int32 a>'))
         self.assertRaises(TypeError, mh.subscribe, topo, 'T1', 'tuple<int32 a>')
+
+    def test_creds(self):
+        creds_file = os.environ['EVENT_STREAMS_CREDENTIALS']
+        with open(creds_file) as data_file:
+            credentials = json.load(data_file)
+        topo = Topology()
+        mh.subscribe(topo, 'T1', CommonSchema.String, credentials=credentials)
+        mh.subscribe(topo, 'T1', CommonSchema.String, credentials='eventstreams')
 
 ## Using a uuid to avoid concurrent test runs interferring 
 ## with each other
@@ -109,3 +118,24 @@ class TestMH(TestCase):
         tester.contents(r, expected)
         tester.tuple_count(r, n)
         tester.test(self.test_ctxtype, self.test_config)
+
+    def test_string_creds(self):
+        n = 107
+        creds_file = os.environ['EVENT_STREAMS_CREDENTIALS']
+        with open(creds_file) as data_file:
+            credentials = json.load(data_file)
+        topo = Topology()
+        add_mh_toolkit(topo)
+        uid = str(uuid.uuid4())
+        s = topo.source(StringData(uid, n)).as_string()
+        mh.publish(s, 'MH_TEST', credentials=credentials)
+
+        r = mh.subscribe(topo, 'MH_TEST', CommonSchema.String, credentials=credentials)
+        r = r.filter(lambda t : t.startswith(uid))
+        expected = list(StringData(uid, n, False)())
+
+        tester = Tester(topo)
+        tester.contents(r, expected)
+        tester.tuple_count(r, n)
+        tester.test(self.test_ctxtype, self.test_config)
+

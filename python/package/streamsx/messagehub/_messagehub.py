@@ -4,12 +4,24 @@
 
 import datetime
 
+import json
 import streamsx.spl.op
 import streamsx.spl.types
 from streamsx.topology.schema import CommonSchema
 
+
+def _add_credentials_file(topology, credentials):
+    file_name = 'eventstreams.json'
+    tmpfile = '/tmp/' + file_name
+    with open(tmpfile, "w") as json_file:
+        json_file.write(json.dumps(credentials))
+
+    topology.add_file_dependency(tmpfile, 'etc')
+    return 'etc/'+file_name
+
+
 def subscribe(topology, topic, schema, group=None, credentials=None, name=None):
-    """Subscribe to messages from Message Hub for a topic.
+    """Subscribe to messages from Event Streams (Message Hub) for a topic.
 
     Adds a Message Hub consumer that subscribes to a topic
     and converts each message to a stream tuple.
@@ -19,7 +31,7 @@ def subscribe(topology, topic, schema, group=None, credentials=None, name=None):
         topic(str): Topic to subscribe messages from.
         schema(StreamSchema): Schema for returned stream.
         group(str): Kafka consumer group identifier. When not specified it default to the job name with `topic` appended separated by an underscore.
-        credentials(str): Name of the application configuration containing the credentials for Message Hub. When set to ``None`` the application configuration ``messagehub`` is used.
+        credentials(str|dict): Credentials in JSON or name of the application configuration containing the credentials for Event Streams (Message Hub). When set to ``None`` the application configuration ``messagehub`` is used.
         name(str): Consumer name in the Streams context, defaults to a generated name.
 
     Returns:
@@ -38,11 +50,19 @@ def subscribe(topology, topic, schema, group=None, credentials=None, name=None):
     if name is None:
         name = topic
 
-    _op = _MessageHubConsumer(topology, schema=schema, outputMessageAttributeName=msg_attr_name, appConfigName=credentials, topic=topic, groupId=group, name=name)
+    appConfigName=credentials
+    # check if it's the credentials for the service
+    if isinstance(credentials, dict):
+         appConfigName = None
+
+    _op = _MessageHubConsumer(topology, schema=schema, outputMessageAttributeName=msg_attr_name, appConfigName=appConfigName, topic=topic, groupId=group, name=name)
+    if isinstance(credentials, dict):
+         _op.params['messageHubCredentialsFile'] = _add_credentials_file(topology, credentials)
     return _op.stream
 
+
 def publish(stream, topic, credentials=None, name=None):
-    """Publish Message Hub messages to a topic.
+    """Publish Event Streams (Message Hub) messages to a topic.
 
     Adds a Message Hub producer where each tuple on `stream` is
     published as a stream message.
@@ -50,8 +70,11 @@ def publish(stream, topic, credentials=None, name=None):
     Args:
         stream(Stream): Stream of tuples to published as messages.
         topic(str): Topic to publish messages to.
-        credentials(str): Name of the application configuration containing the credentials for Message Hub. When set to ``None`` the application configuration ``messagehub`` is used.
+        credentials(str|dict): Credentials in JSON or name of the application configuration containing the credentials for Event Streams (Message Hub). When set to ``None`` the application configuration ``messagehub`` is used.
         name(str): Producer name in the Streams context, defaults to a generated name.
+
+    Returns:
+        streamsx.topology.topology.Sink: Stream termination.
     """
     if stream.oport.schema == CommonSchema.Json:
         msg_attr = 'jsonString'
@@ -60,9 +83,19 @@ def publish(stream, topic, credentials=None, name=None):
     else:
         raise TypeError(schema)
 
-    _op = _MessageHubProducer(stream, appConfigName=credentials, topic=topic)
+    appConfigName=credentials
+    # check if it's the credentials for the service
+    if isinstance(credentials, dict):
+         appConfigName = None
+
+    _op = _MessageHubProducer(stream, appConfigName=appConfigName, topic=topic)
     _op.params['messageAttribute'] = _op.attribute(stream, msg_attr)
+    if isinstance(credentials, dict):
+         _op.params['messageHubCredentialsFile'] = _add_credentials_file(stream.topology, credentials)
     
+    return streamsx.topology.topology.Sink(_op)    
+
+
 class _MessageHubConsumer(streamsx.spl.op.Source):
     def __init__(self, topology, schema, vmArg=None, appConfigName=None, clientId=None, messageHubCredentialsFile=None, outputKeyAttributeName=None, outputMessageAttributeName=None, outputTimestampAttributeName=None, outputOffsetAttributeName=None, outputPartitionAttributeName=None, outputTopicAttributeName=None, partition=None, propertiesFile=None, startPosition=None, startTime=None, topic=None, triggerCount=None, userLib=None, groupId=None, name=None):
         kind="com.ibm.streamsx.messagehub::MessageHubConsumer"

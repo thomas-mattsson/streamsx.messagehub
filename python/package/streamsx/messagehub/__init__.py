@@ -6,7 +6,7 @@
 Overview
 ++++++++
 
-`IBM® Message Hub <http://www-03.ibm.com/software/products/en/ibm-message-hub>`_ is a fully managed, cloud-based messaging service. It is built on Apache Kafka and is available through IBM Bluemix® Platform as a Service for developers—both in Bluemix Public and Bluemix Dedicated. 
+`IBM® Event Streams <https://www.ibm.com/cloud/event-streams>`_ is a fully managed, cloud-based messaging service. It is built on Apache Kafka and is available through IBM Cloud® as a Service. 
 
 This module allows a Streams application to :py:func:`subscribe <subscribe>` a
 message queue as a stream and :py:func:`publish <publish>` messages on a queue from a stream
@@ -15,13 +15,13 @@ of tuples.
 Credentials
 +++++++++++
 
-Message Hub credentials are defined using a Streams application configuration.
+Event Streams credentials are defined using a Streams application configuration or setting the Event Streams service credentials JSON directly to the ``credentials`` parameter of the functions.
 
 By default an application configuration named `messagehub` is used,
 a different configuration can be specified using the ``credentials``
 parameter to :py:func:`subscribe` or :py:func:`publish`.
 
-The application configuration must contain the property ``messagehub.creds`` with a value of the raw Message Hub credentials JSON.
+The application configuration must contain the property ``messagehub.creds`` with a value of the raw Event Streams service credentials JSON.
 
 Messages
 ++++++++
@@ -61,7 +61,7 @@ a topic and the same application consuming the same topic::
 
 """
 
-__version__='0.3.1'
+__version__='0.4.0'
 
 __all__ = ['subscribe', 'publish']
 from streamsx.messagehub._messagehub import subscribe, publish
