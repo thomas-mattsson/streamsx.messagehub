@@ -35,5 +35,12 @@ Documentation links:
 pip install 'git+https://github.com/IBMStreams/streamsx.messagehub.git@pypackage#subdirectory=python/package'
 ```
 
+## Test
 
+Package can be tested with TopologyTester using the Streaming Analytics service and Event Streams service on IBM Cloud.
+
+```
+cd python/package
+python3 -u -m unittest streamsx.messagehub.tests.test_messagehub
+```
 

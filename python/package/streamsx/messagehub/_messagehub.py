@@ -3,7 +3,7 @@
 # Copyright IBM Corp. 2017,2018
 
 import datetime
-
+from tempfile import gettempdir
 import json
 import streamsx.spl.op
 import streamsx.spl.types
@@ -12,7 +12,8 @@ from streamsx.topology.schema import CommonSchema
 
 def _add_credentials_file(topology, credentials):
     file_name = 'eventstreams.json'
-    tmpfile = '/tmp/' + file_name
+    tmpdirname = gettempdir()
+    tmpfile = tmpdirname + '/' + file_name
     with open(tmpfile, "w") as json_file:
         json_file.write(json.dumps(credentials))
 
