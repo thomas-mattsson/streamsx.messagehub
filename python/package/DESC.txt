@@ -15,21 +15,29 @@ A simple hello world example of a Streams application publishing to a topic and 
     from streamsx.topology.schema import CommonSchema
     from streamsx.topology.context import submit
     import streamsx.messagehub as messagehub
+    import time
 
-    topo = Topology('MessageHubHelloWorld')
+    def delay (v):
+        time.sleep (5.0)
+        return True
 
-    to_mh = topo.source(['Hello', 'World!'])
+    topo = Topology ('MessageHubHelloWorld')
+
+    to_mh = topo.source (['Hello', 'World!'])
     to_mh = to_mh.as_string()
+    # delay tuple by tuple
+    to_mh = to_mh.filter (delay)
 
-    # Publish a stream to Message Hub using MH_HW topic
-    messagehub.publish(to_mh, topic='MH_HW')
+    # Publish a stream to Event Streams using MH_HW topic
+    messagehub.publish (to_mh, topic='MH_HW')
 
     # Subscribe to same topic as a stream
-    from_mh = messagehub.subscribe(topo, schema=CommonSchema.String, topic='MH_HW')
+    from_mh = messagehub.subscribe (topo, schema=CommonSchema.String, topic='MH_HW')
 
+    # You'll find the Hello World! in stdout log file:
     from_mh.print()
 
-    submit('STREAMING_ANALYTICS_SERVICE', topo)
+    submit ('STREAMING_ANALYTICS_SERVICE', topo)
 
 Documentation
 =============

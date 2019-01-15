@@ -1,8 +1,0 @@
-/.apt_generated/
-/output/
-/.toolkitList
-toolkit.xml
-/opt
-bin/
-.kafka
-build

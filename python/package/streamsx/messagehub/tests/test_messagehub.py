@@ -20,7 +20,7 @@ import json
 ## Streaming analytics service has:
 ##    application config 'messagehub' configured for MessageHub
 ##
-## Message Hub has:
+## Event Streams service has:
 ##
 ##    topic MH_TEST with one partition (1 hour retention)
 ##

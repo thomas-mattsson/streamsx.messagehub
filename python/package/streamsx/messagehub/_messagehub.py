@@ -24,8 +24,8 @@ def _add_credentials_file(topology, credentials):
 def subscribe(topology, topic, schema, group=None, credentials=None, name=None):
     """Subscribe to messages from Event Streams (Message Hub) for a topic.
 
-    Adds a Message Hub consumer that subscribes to a topic
-    and converts each message to a stream tuple.
+    Adds an Event Streams consumer that subscribes to a topic
+    and converts each consumed message to a stream tuple.
 
     Args:
         topology(Topology): Topology that will contain the stream of messages.
@@ -65,7 +65,7 @@ def subscribe(topology, topic, schema, group=None, credentials=None, name=None):
 def publish(stream, topic, credentials=None, name=None):
     """Publish Event Streams (Message Hub) messages to a topic.
 
-    Adds a Message Hub producer where each tuple on `stream` is
+    Adds an Event Streams producer where each tuple on `stream` is
     published as a stream message.
 
     Args:

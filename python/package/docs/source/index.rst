@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-IBM Streams Message Hub integration
-===================================
+IBM Streams Event Streams integration
+=====================================
 
 .. automodule:: streamsx.messagehub
 
