@@ -4,3 +4,4 @@ python/package/build/
 python/package/dist/
 python/package/streamsx.messagehub.egg-info/
 python/package/docs/build/
+/.project
